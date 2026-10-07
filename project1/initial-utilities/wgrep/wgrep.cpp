@@ -8,6 +8,13 @@
 void wgrep(std::string word, char * file) {
 
     int fileDescriptor = open(file, O_RDONLY);
+
+    if (fileDescriptor < 0)
+    { // file cannot open
+        std::cerr << "wgrep: cannot open file\n" << std::endl;
+        exit(1);
+    }
+
     std::string currentLine;
     char singleChar;
     ssize_t bytesRead;
@@ -29,6 +36,15 @@ void wgrep(std::string word, char * file) {
 int main(int argc, char **argv) {
 
      std::string word = argv[1];
+
+     if (argc == 1) {
+        std::cout << "wgrep: searchterm [file...]\n" << std::endl;
+        exit(1);
+     }
+
+     if (argc == 2) {
+        
+     }
 
     for (int i = 2; i < argc; ++i) {
         wgrep(word, argv[i]);

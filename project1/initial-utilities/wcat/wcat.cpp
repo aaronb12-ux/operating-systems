@@ -3,16 +3,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <vector>
-
-int main(int argc, char **argv)
-{
-
-    for (int i = 1; i < argc; i++)
-    {
-        wcat(argv[i]);
-    }
-    return 0;
-}
+#include <cstring> // Required for std::strlen
 
 void wcat(char *file)
 {
@@ -20,28 +11,52 @@ void wcat(char *file)
 
     if (fileDescriptor < 0)
     { // file cannot open
-        std::cerr << "cannot open file" << std::endl;
+        std::cerr << "wcat: cannot open file\n" << std::endl;
         exit(1);
     }
 
     char buffer[1024];
+    ssize_t bytesRead;
+    bool isEmpty = true;
 
-    ssize_t bytesRead = read(fileDescriptor, buffer, sizeof(buffer) - 1);
-
-    if (bytesRead == -1)
+    while ((bytesRead = read(fileDescriptor, buffer, sizeof(buffer) - 1)) > 0)
     {
-        std::cerr << ("Error reading file") << std::endl;
+        isEmpty = false;
+
+        if (bytesRead == -1)
+        {
+            std::cerr << ("Error reading file") << std::endl;
+            exit(1);
+        }
+
+        buffer[bytesRead] = '\0'; // Cut off exactly where this chunk ends
+        write(1, buffer, strlen(buffer));
     }
 
-    else if (bytesRead == 0)
-    {
-        std::cerr << ("File was empty. Reached EOF immediately.\n") << std::endl;
+    if (bytesRead == 0 and isEmpty) {
+         std::cerr << ("File was empty. Reached EOF immediately.\n") << std::endl;
+         exit(1);
     }
 
-    else
-    {
-        std::cout << buffer << " bytes from the file";
+    if (bytesRead == 1) {
+         std::cerr << ("Error reading file") << std::endl;
+         exit(1);
     }
 
     close(fileDescriptor);
+}
+
+int main(int argc, char **argv)
+{
+
+    if (argc == 1) { //no input files ->
+        exit(0);
+        return 0;
+    }
+
+    for (int i = 1; i < argc; i++)
+    {
+        wcat(argv[i]);
+    }
+    return 0;
 }
